@@ -1,0 +1,63 @@
+# Instalar paquetes si no los tienes
+# install.packages("scatterplot3d")
+# install.packages("corrplot")
+
+library(scatterplot3d)
+library(corrplot)
+
+# Leer datos (ajusta el separador si es necesario)
+datos <- read.table("data.txt",
+                    header = FALSE,
+                    skip = 1,
+                    sep = ";",           # <-- cambia a "\t" o " " si es necesario
+                    stringsAsFactors = FALSE)
+
+# Mostrar las primeras filas y estructura
+print(head(datos))
+print(str(datos))
+
+# Verificar número de columnas
+if (ncol(datos) == 3) {
+  colnames(datos) <- c("Temperatura_promedio", "Humedad_relativa_promedio", "Precipitacion")
+} else {
+  stop(paste("Error: Se esperaban 3 columnas, pero se leyeron", ncol(datos), "columnas. Revisa el separador 'sep'."))
+}
+
+# Convertir columnas a numérico
+datos$Temperatura_promedio <- as.numeric(as.character(datos$Temperatura_promedio))
+datos$Humedad_relativa_promedio <- as.numeric(as.character(datos$Humedad_relativa_promedio))
+datos$Precipitacion <- as.numeric(as.character(datos$Precipitacion))
+
+# Eliminar filas con NAs
+datos <- na.omit(datos)
+
+# Confirmar cantidad de filas
+cat("Filas después de eliminar NAs:", nrow(datos), "\n")
+
+# === MATRIZ DE CORRELACIONES ===
+cor_matrix <- cor(datos)
+
+cat("\n=== MATRIZ DE CORRELACIONES ===\n")
+print(round(cor_matrix, 2))
+
+# === GRÁFICO 3D ===
+scatterplot3d(x = datos$Temperatura_promedio,
+              y = datos$Humedad_relativa_promedio,
+              z = datos$Precipitacion,
+              color = "blue",
+              pch = 19,
+              xlab = "Temperatura promedio",
+              ylab = "Humedad relativa promedio",
+              zlab = "Precipitación",
+              main = "Diagrama de puntos 3D - Palcacocha")
+
+# === GRÁFICO DE CORRELACIÓN ===
+# Correlograma con colores
+corrplot(cor_matrix,
+         method = "color",        # Otros: "number", "circle", etc.
+         type = "upper",          # Solo la parte superior
+         addCoef.col = "black",   # Muestra valores numéricos
+         tl.col = "black",        # Texto de etiquetas en negro
+         col = colorRampPalette(c("blue", "white", "red"))(200),
+         title = "Matriz de correlaciones",
+         mar = c(0, 0, 2, 0))      # Margen superior para el título

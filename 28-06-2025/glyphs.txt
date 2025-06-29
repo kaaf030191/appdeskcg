@@ -1,0 +1,37 @@
+# Leer los datos desde archivo .txt
+# Se omite la primera fila porque contiene encabezados no útiles para los valores
+datos <- read.table("data.txt", header = FALSE, sep = ";", skip = 1)
+
+# Asignar nombres de columnas para mayor claridad
+colnames(datos) <- c("TEMPERATURA_PROMEDIO", "HUMEDAD_RELATIVA_PROMEDIO", "PRECIPITACION")
+
+# Crear grupos automáticos para resumir visualmente los 370 registros
+# Aquí se dividen en 5 grupos con cantidades similares de filas
+# Puedes aumentar o reducir la cantidad de grupos cambiando `breaks = 5`
+datos$grupo <- cut(seq_len(nrow(datos)), breaks = 5, labels = paste("Grupo", 1:5))
+
+# Calcular promedios de cada variable por grupo
+# Esto genera un resumen representativo para cada grupo
+resumen <- aggregate(. ~ grupo, data = datos, FUN = mean)
+
+# Extraer solo las columnas numéricas (sin la columna de grupo)
+valores <- resumen[, c("TEMPERATURA_PROMEDIO", "HUMEDAD_RELATIVA_PROMEDIO", "PRECIPITACION")]
+
+# Crear etiquetas para el gráfico (nombre de cada grupo)
+etiquetas <- as.character(resumen$grupo)
+
+# Mostrar el gráfico tipo glyphs (estrellas con 3 brazos por variable)
+stars(valores,
+      labels = etiquetas,
+      draw.segments = TRUE,
+      key.loc = c(1, 1),
+      main = "Gráfico Glyphs Promediado por Grupo",
+      col.segments = c("tomato", "steelblue", "forestgreen"))  # Colores: temp, humedad, precipitación
+
+# Explicación en consola
+cat("\nEXPLICACIÓN DE LOS GRUPOS:\n")
+for (i in 1:5) {
+  cat(paste0("Grupo ", i, ": incluye observaciones desde la fila ",
+             round((i - 1) * nrow(datos) / 5 + 1), " hasta la fila ",
+             round(i * nrow(datos) / 5), "\n"))
+}

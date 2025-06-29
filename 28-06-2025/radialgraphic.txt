@@ -1,0 +1,46 @@
+# Instalar si no tienes estos paquetes
+# install.packages("fmsb")
+# install.packages("scales")
+
+library(fmsb)
+library(scales)
+
+# === GRAFICO RADIAL / DE ARAÑA ===
+
+# Seleccionar las primeras 5 filas para comparar (puedes cambiar este número)
+subset_radar <- head(datos, 5)
+
+# Calcular máximos y mínimos por columna
+maximos <- apply(subset_radar, 2, max)
+minimos <- apply(subset_radar, 2, min)
+
+# Crear el data frame con la estructura requerida por fmsb
+df_radar <- rbind(maximos, minimos, subset_radar)
+
+# Renombrar las filas para la leyenda
+rownames(df_radar) <- c("Max", "Min", paste("Obs", 1:(nrow(df_radar) - 2)))
+
+# Paleta de colores para cada observación
+colores <- c("red", "green", "blue", "orange", "purple")
+
+# Dibujar gráfico radial
+radarchart(df_radar,
+           axistype = 1,
+           pcol = colores,
+           pfcol = alpha(colores, 0.3),  # Relleno semitransparente
+           plwd = 2,
+           plty = 1,
+           cglcol = "grey",
+           cglty = 1,
+           axislabcol = "black",
+           caxislabels = round(seq(0, max(maximos), length.out = 5), 0),
+           vlcex = 1,
+           title = "Perfil climático (Gráfico radial)")
+
+# Agregar leyenda
+legend("bottomright",
+       legend = rownames(df_radar)[-c(1, 2)],
+       col = colores,
+       lty = 1,
+       lwd = 2,
+       bty = "n")

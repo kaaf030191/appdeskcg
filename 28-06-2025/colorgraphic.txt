@@ -1,0 +1,38 @@
+# Instalar paquetes si es necesario
+if (!require("dplyr")) install.packages("dplyr")
+if (!require("tidyr")) install.packages("tidyr")
+if (!require("ggplot2")) install.packages("ggplot2")
+
+# Cargar librerías
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+
+# Leer archivo .txt, saltando la primera fila
+datos <- read.table("data.txt", header = FALSE, sep = ";", skip = 1)
+colnames(datos) <- c("TEMPERATURA_PROMEDIO", "HUMEDAD_RELATIVA_PROMEDIO", "PRECIPITACION")
+
+# Agregar grupo ficticio (10 grupos para hacer el heatmap más legible)
+datos$grupo <- cut(seq_len(nrow(datos)), breaks = 10, labels = paste("Grupo", 1:10))
+
+# Agrupar por grupo y calcular promedio
+datos_resumen <- datos %>%
+  group_by(grupo) %>%
+  summarise(
+    TEMPERATURA = mean(TEMPERATURA_PROMEDIO),
+    HUMEDAD = mean(HUMEDAD_RELATIVA_PROMEDIO),
+    PRECIPITACION = mean(PRECIPITACION)
+  ) %>%
+  pivot_longer(cols = -grupo, names_to = "Variable", values_to = "Valor")
+
+# Graficar heatmap
+ggplot(datos_resumen, aes(x = Variable, y = grupo, fill = Valor)) +
+  geom_tile(color = "white") +
+  scale_fill_gradient(low = "lightyellow", high = "red") +
+  labs(
+    title = "Mapa de Color: Promedio Climático por Grupo",
+    x = "Variable",
+    y = "Grupo",
+    fill = "Valor Promedio"
+  ) +
+  theme_minimal()

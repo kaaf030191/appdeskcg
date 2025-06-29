@@ -1,0 +1,52 @@
+# Instalar paquetes si es necesario
+if (!require("GGally")) install.packages("GGally")
+if (!require("ggplot2")) install.packages("ggplot2")
+if (!require("dplyr")) install.packages("dplyr")
+
+library(GGally)
+library(ggplot2)
+library(dplyr)
+
+# Leer archivo correctamente: separador de campo = ; y decimal = ,
+datos <- read.table("data.txt", header = FALSE, sep = ";", dec = ",", stringsAsFactors = FALSE)
+colnames(datos) <- c("TEMPERATURA", "HUMEDAD", "PRECIPITACION")
+
+# Convertir a numérico de forma segura (por si acaso algún texto raro)
+datos <- datos %>%
+  mutate(
+    TEMPERATURA = as.numeric(TEMPERATURA),
+    HUMEDAD = as.numeric(HUMEDAD),
+    PRECIPITACION = as.numeric(PRECIPITACION)
+  )
+
+# Verifica que sean numéricas
+str(datos)
+
+# Crear categorías de precipitación para usar como color
+datos <- datos %>%
+  mutate(PRECIPITACION_CAT = cut(PRECIPITACION,
+                                 breaks = 5,
+                                 labels = c("Muy Baja", "Baja", "Media", "Alta", "Muy Alta")))
+
+# Crear gráfico de columnas paralelas
+ggparcoord(data = datos,
+           columns = 1:3,
+           groupColumn = "PRECIPITACION_CAT",
+           scale = "std",
+           showPoints = FALSE,
+           alphaLines = 0.4) +
+  scale_color_manual(values = c(
+    "Muy Baja" = "#1f77b4",  # azul
+    "Baja"     = "#ff7f0e",  # naranja
+    "Media"    = "#2ca02c",  # verde
+    "Alta"     = "#d62728",  # rojo
+    "Muy Alta" = "#000000"   # morado
+  )) +
+  labs(
+    title = "Gráfico de Columnas Paralelas (Sin Agrupación)",
+    subtitle = "Cada línea representa un registro; color = nivel de precipitación",
+    x = "Variable",
+    y = "Valor Escalado",
+    color = "Precipitación"
+  ) +
+  theme_minimal()

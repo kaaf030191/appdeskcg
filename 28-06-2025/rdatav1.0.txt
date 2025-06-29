@@ -1,0 +1,50 @@
+# Instalar paquete si no lo tienes
+# install.packages("scatterplot3d")
+
+library(scatterplot3d)
+
+# Leer datos, omitiendo primera fila con encabezados o texto
+# Cambia 'sep' a "\t" si es tabulado, " " si es espacio
+datos <- read.table("data.txt",
+                    header = FALSE,
+                    skip = 1,
+                    sep = ";",           # <--- revisa este separador
+                    stringsAsFactors = FALSE)
+
+# Mostrar estructura para verificar número de columnas
+print(head(datos))
+print(str(datos))
+
+# Verificar número de columnas antes de asignar nombres
+if (ncol(datos) == 3) {
+  colnames(datos) <- c("Temperatura_promedio", "Humedad_relativa_promedio", "Precipitacion")
+} else {
+  stop(paste("Error: Se esperaban 3 columnas, pero se leyeron", ncol(datos), "columnas. Revisa el separador 'sep'."))
+}
+
+# Convertir a numérico
+datos$Temperatura_promedio <- as.numeric(as.character(datos$Temperatura_promedio))
+datos$Humedad_relativa_promedio <- as.numeric(as.character(datos$Humedad_relativa_promedio))
+datos$Precipitacion <- as.numeric(as.character(datos$Precipitacion))
+
+# Eliminar filas con NAs
+datos <- na.omit(datos)
+
+# Confirmar cantidad de filas después de limpiar
+print(paste("Filas después de eliminar NAs:", nrow(datos)))
+
+# 🔍 Calcular y mostrar la matriz de correlación
+cat("\n=== MATRIZ DE CORRELACIONES ===\n")
+cor_matrix <- cor(datos)
+print(cor_matrix)
+
+# 📊 Graficar diagrama de dispersión 3D
+scatterplot3d(x = datos$Temperatura_promedio,
+              y = datos$Humedad_relativa_promedio,
+              z = datos$Precipitacion,
+              color = "blue",
+              pch = 19,
+              xlab = "Temperatura promedio",
+              ylab = "Humedad relativa promedio",
+              zlab = "Precipitación",
+              main = "Diagrama de puntos 3D - Palcacocha")
